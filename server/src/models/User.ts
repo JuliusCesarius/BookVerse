@@ -1,41 +1,61 @@
-import { Schema, model, type Document } from 'mongoose';
+import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
-// import schema from Book.js
-import bookSchema from './Book.js';
-import type { BookDocument } from './Book.js';
-
-export interface UserDocument extends Document {
+export interface UserDocument extends mongoose.Document {
   id: string;
   username: string;
   email: string;
   password: string;
-  savedBooks: BookDocument[];
+  savedBooks: Array<{
+    bookId: string;
+    authors: string[];
+    description: string;
+    title: string;
+    image: string;
+    link: string;
+  }>;
   isCorrectPassword(password: string): Promise<boolean>;
   bookCount: number;
 }
 
-const userSchema = new Schema<UserDocument>(
+const userSchema = new mongoose.Schema<UserDocument>(
   {
     username: {
       type: String,
       required: true,
       unique: true,
+      trim: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
-      match: [/.+@.+\..+/, 'Must use a valid email address'],
+      match: [/.+@.+\..+/, 'Must match an email address!'],
     },
     password: {
       type: String,
       required: true,
+      minlength: 5,
     },
-    // set savedBooks to be an array of data that adheres to the bookSchema
-    savedBooks: [bookSchema],
+    savedBooks: [
+      {
+        type: {
+          bookId: {
+            type: String,
+            required: true,
+          },
+          authors: [String],
+          description: String,
+          title: {
+            type: String,
+            required: true,
+          },
+          image: String,
+          link: String,
+        },
+      },
+    ],
   },
-  // set this to use virtual below
   {
     toJSON: {
       virtuals: true,
@@ -55,7 +75,7 @@ userSchema.pre('save', async function (next) {
 
 // custom method to compare and validate password for logging in
 userSchema.methods.isCorrectPassword = async function (password: string) {
-  return await bcrypt.compare(password, this.password);
+  return bcrypt.compare(password, this.password);
 };
 
 // when we query a user, we'll also get another field called `bookCount` with the number of saved books we have
@@ -63,6 +83,6 @@ userSchema.virtual('bookCount').get(function () {
   return this.savedBooks.length;
 });
 
-const User = model<UserDocument>('User', userSchema);
+const User = mongoose.model<UserDocument>('User', userSchema);
 
 export default User;
