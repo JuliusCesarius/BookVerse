@@ -626,6 +626,62 @@ mutation {
 }
 ```
 
+### Test Credentials
+
+For testing the application, you can use these credentials:
+
+**Sign Up:**
+- Username: `testuser`
+- Email: `test@example.com`
+- Password: `password123`
+
+**Login:**
+- Email: `test@example.com`
+- Password: `password123`
+
+The application validates:
+- Email must be in valid format
+- Password must be at least 5 characters
+- Username must be at least 3 characters
+
+### Testing with Apollo Studio Explorer
+
+1. **Access Apollo Studio Explorer**
+   - Open http://localhost:3001/graphql in your browser
+   - You'll see the Apollo Studio Explorer interface
+
+2. **Authentication**
+   - After signing up or logging in, copy the `token` from the response
+   - In Apollo Studio Explorer, click on "Headers" at the bottom
+   - Add this header:
+   ```json
+   {
+     "authorization": "Bearer YOUR_TOKEN_HERE"
+   }
+   ```
+   Replace `YOUR_TOKEN_HERE` with the actual token
+
+3. **Testing Authenticated Operations**
+   - The `me` query and mutations like `saveBook` and `removeBook` require authentication
+   - Make sure to include the authorization header for these operations
+   - Example error if not authenticated:
+   ```json
+   {
+     "errors": [
+       {
+         "message": "You need to be logged in!",
+         "path": ["removeBook"]
+       }
+     ]
+   }
+   ```
+
+4. **Testing Flow**
+   1. First run the `addUser` mutation to create an account
+   2. Copy the token from the response
+   3. Add the authorization header with the token
+   4. Now you can test authenticated operations like `me`, `saveBook`, and `removeBook`
+
 ## Security Considerations
 - JWT tokens for authentication
 - Password hashing
